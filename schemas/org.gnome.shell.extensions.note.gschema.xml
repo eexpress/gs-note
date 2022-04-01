@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+
+  <schema id="org.gnome.shell.extensions.note"
+    path="/org/gnome/shell/extensions/note/">
+
+    <key name="dirs" type="as">
+      <default>["~/project", '~/project/gs-note']</default>
+      <description>Common Directory.</description>
+    </key>
+    <key name="cmds" type="as">
+      <default>["gnome-extensions pack -f", 'ls -1', 'git status', 'glib-compile-schemas schemas/']</default>
+      <description>Common Command.</description>
+    </key>
+    <key name="clip" type="as">
+      <default>[]</default>
+      <description>Clipboard Content.</description>
+    </key>
+
+  </schema>
+
+</schemalist>
+

@@ -54,12 +54,9 @@ class Indicator extends PanelMenu.Button {
 	}
 
 	add_data(text, s){
-		lg(text);
-		lg(s);
 		const a = this.get_array_from_str(s);
 		a.push(text);
 		this.settings.set_strv(s, a);
-		lg(s+": "+a);
 		this.refresh_menu();
 	};
 
@@ -95,7 +92,6 @@ class Indicator extends PanelMenu.Button {
 		item._icon.connect('button-release-event', (actor) => {
 			const a = this.get_array_from_str(item.type);
 			a.splice(a.indexOf(item.label.text), 1);
-			lg(item.type+": "+a);
 			this.settings.set_strv(sets[s][1], a);
 			item.destroy();
 		});
