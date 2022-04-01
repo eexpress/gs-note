@@ -1,0 +1,11 @@
+{
+  "name": "note",
+  "description": "note me",
+  "uuid": "note@eexpss.gmail.com",
+  "url": "https://github.com/eexpress/gs-note",
+  "gettext-domain": "note",
+  "settings-schema": "org.gnome.shell.extensions.note",
+  "shell-version": [
+    "42"
+  ]
+}
