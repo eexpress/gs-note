@@ -70,7 +70,6 @@ class Indicator extends PanelMenu.Button {
 		for (let i of clip){this.add_menu(i, 2);}
 	};
 
-
 	get_array_from_str(s){
 		switch (s){
 			case 'dirs':
@@ -101,18 +100,47 @@ class Indicator extends PanelMenu.Button {
 			item.destroy();
 		});
 		item.connect('activate', (actor, event) => {
+			const mtext = item.label.text;
 			switch (item.type){
 				case 'dirs':
-					cdir = item.label.text;
+					cdir = mtext;
 					if (cdir.indexOf("~/") == 0) { cdir = GLib.get_home_dir() + cdir.substr(1); }
+					switch(event.get_button()){
+						case 1:
+							Gio.app_info_launch_default_for_uri(`file://${cdir}`, global.create_app_launch_context(0, -1));
+							return Clutter.EVENT_STOP;
+						case 2:
+							GLib.chdir(cdir);
+							if(GLib.find_program_in_path('kgx')){
+								GLib.spawn_command_line_async(`kgx`);
+							} else if(GLib.find_program_in_path('gnome-terminal')){
+								GLib.spawn_command_line_async(`gnome-terminal`);
+							} else {
+								Main.notify(_("Not kgx(gnome-console) or gnome-terminal found."));
+							}
+							return Clutter.EVENT_STOP;
+						case 3:
+							this._clipboard.set_text(St.ClipboardType.PRIMARY, mtext);
+							return Clutter.EVENT_STOP;
+					}
 					return Clutter.EVENT_STOP;
-					break;
 				case 'cmds':
+					if(event.get_button() == 3){
+						this._clipboard.set_text(St.ClipboardType.PRIMARY, mtext);
+						return Clutter.EVENT_STOP;
+					}
 					GLib.chdir(cdir);
-					GLib.spawn_command_line_async(`gnome-terminal -- bash -c '${item.label.text}; bash'`);
+					if(GLib.find_program_in_path('kgx')){
+						GLib.spawn_command_line_async(`kgx -e '${mtext}'`);
+					} else if(GLib.find_program_in_path('gnome-terminal')){
+						GLib.spawn_command_line_async(`gnome-terminal -- bash -c '${mtext}; bash'`);
+					} else {
+						Main.notify(_("Not gnome-console(kgx) or gnome-terminal found."));
+					}
 					return Clutter.EVENT_STOP;
 				case 'clip':
-					this._clipboard.set_text(St.ClipboardType.PRIMARY, item.label.text);
+					this._clipboard.set_text(St.ClipboardType.PRIMARY, mtext);
+					return Clutter.EVENT_STOP;
 			}
 		});
 		this.menu.addMenuItem(item);
