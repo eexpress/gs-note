@@ -25,12 +25,7 @@ class Indicator extends PanelMenu.Button {
 		dirs = this.settings.get_strv('dirs');
 		cmds = this.settings.get_strv('cmds');
 		clip = this.settings.get_strv('clip');
-
-		this.sets = [
-			['inode-directory-symbolic', dirs, 'dirs'],
-			['system-run-symbolic', cmds, 'cmds'],
-			['notes-app-symbolic', clip, 'clip']
-		];
+		this._clipboard = St.Clipboard.get_default();
 
         this.add_child(new St.Icon({
             icon_name: 'notes-app-symbolic',
@@ -45,23 +40,26 @@ class Indicator extends PanelMenu.Button {
     }
 
     get_clip(){
-		this._clipboard = St.Clipboard.get_default();
 		this._clipboard.get_text(St.ClipboardType.PRIMARY, (clipboard, text) => {
 			text = text.trim();
 			if(text.length<3) return;
 			let path = text;
 			if (path.indexOf("~/") == 0) { path = GLib.get_home_dir() + path.substr(1); }
-			if (GLib.file_test(path, GLib.FileTest.IS_DIR)) { this.add_data(text, 0); return; }
+			if (GLib.file_test(path, GLib.FileTest.IS_DIR)) { this.add_data(text, 'dirs'); return; }
 			const para = text.split('\ ');
 			const r = GLib.find_program_in_path(para[0]);
-			if (r) { this.add_data(text, 1); return;}
-			this.add_data(text, 2);
+			if (r) { this.add_data(text, 'cmds'); return;}
+			this.add_data(text, 'clip');
 		});
 	}
 
-	add_data(s){
-		this.sets[s][1].push(text);
-		this.settings.set_strv(this.sets[s][2], this.sets[s][1]);
+	add_data(text, s){
+		lg(text);
+		lg(s);
+		const a = this.get_array_from_str(s);
+		a.push(text);
+		this.settings.set_strv(s, a);
+		lg(s+": "+a);
 		this.refresh_menu();
 	};
 
@@ -72,34 +70,49 @@ class Indicator extends PanelMenu.Button {
 		for (let i of clip){this.add_menu(i, 2);}
 	};
 
+
+	get_array_from_str(s){
+		switch (s){
+			case 'dirs':
+				return dirs;
+			case 'cmds':
+				return cmds;
+			case 'clip':
+				return clip;
+		}
+	};
+
 	add_menu(text, s){
-		lg(text);
-		const item = new PopupMenu.PopupImageMenuItem(text, this.sets[s][0]);
-		item.type = this.sets[s][2];
+		const sets = [
+			['inode-directory-symbolic', 'dirs'],
+			['system-run-symbolic', 'cmds'],
+			['notes-app-symbolic', 'clip']
+		];
+		const item = new PopupMenu.PopupImageMenuItem(text, sets[s][0]);
+		item.type = sets[s][1];
 		item._icon.set_reactive(true);
 		item._icon.connect('enter-event', (actor) => { item.setIcon('list-remove-symbolic'); });
-		item._icon.connect('leave-event', (actor) => { item.setIcon(this.sets[s][0]); });
+		item._icon.connect('leave-event', (actor) => { item.setIcon(sets[s][0]); });
 		item._icon.connect('button-release-event', (actor) => {
-			this.sets[s][1].splice(this.sets[s][1].indexOf(item.text), 1);
-			this.settings.set_strv(this.sets[s][2], this.sets[s][1]);
+			const a = this.get_array_from_str(item.type);
+			a.splice(a.indexOf(item.label.text), 1);
+			lg(item.type+": "+a);
+			this.settings.set_strv(sets[s][1], a);
 			item.destroy();
 		});
 		item.connect('activate', (actor, event) => {
 			switch (item.type){
 				case 'dirs':
-					cdir = item.text;
+					cdir = item.label.text;
+					if (cdir.indexOf("~/") == 0) { cdir = GLib.get_home_dir() + cdir.substr(1); }
 					return Clutter.EVENT_STOP;
 					break;
 				case 'cmds':
-					if (event.get_button() == 3) {
-						GLib.spawn_command_line_async(`gnome-terminal --working-directory='${cdir}' -- bash -c '${item.text}; bash'`);
-						//~ Util.spawn(['gnome-terminal', `--working-directory='${path}/${text}' -- bash -c 'git status; bash'`]); //no work correctly.
-						return Clutter.EVENT_STOP;
-					}
 					GLib.chdir(cdir);
-					GLib.spawn_command_line_async(`${item.text}`);
+					GLib.spawn_command_line_async(`gnome-terminal -- bash -c '${item.label.text}; bash'`);
 					return Clutter.EVENT_STOP;
 				case 'clip':
+					this._clipboard.set_text(St.ClipboardType.PRIMARY, item.label.text);
 			}
 		});
 		this.menu.addMenuItem(item);
