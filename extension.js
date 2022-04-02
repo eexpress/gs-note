@@ -44,9 +44,7 @@ const Indicator = GObject.registerClass(
 				if (!text) return;	// text is null
 				text = text.trim();
 				if (text.length < 3) return;
-				let path = text;
-				if (path.indexOf("~/") == 0) { path = GLib.get_home_dir() + path.substr(1); }
-				if (GLib.file_test(path, GLib.FileTest.IS_DIR)) {
+				if (GLib.file_test(this.get_path(text), GLib.FileTest.IS_DIR)) {
 					this.add_data(text, 'dirs');
 					return;
 				}
@@ -59,6 +57,11 @@ const Indicator = GObject.registerClass(
 				this.add_data(text, 'clip');
 			});
 		}
+
+		get_path(text) {
+			if (text.indexOf("~/") == 0) { text = GLib.get_home_dir() + text.substr(1); }
+			return text;
+		};
 
 		add_data(text, s) {
 			const a = this.get_array_from_str(s);
@@ -88,15 +91,23 @@ const Indicator = GObject.registerClass(
 
 		add_menu(text, s) {
 			const sets = [
-				[ 'inode-directory-symbolic', 'dirs' ],
+				[ 'folder-symbolic', 'dirs' ],
 				[ 'system-run-symbolic', 'cmds' ],
-				[ 'notes-app-symbolic', 'clip' ]
+				[ 'edit-paste-symbolic', 'clip' ]
 			];
-			const item = new PopupMenu.PopupImageMenuItem(text, sets[s][0]);
+			let dicon;
+			if (s === 0) {	// dirs
+				if (!cdir) {  //缺省第一个目录。
+					cdir = text;
+					GLib.chdir(this.get_path(cdir));  //赋值就立刻改目录。
+				}
+				if (cdir == text) dicon = 'emblem-ok-symbolic';
+			}
+			const item = new PopupMenu.PopupImageMenuItem(text, dicon ?? sets[s][0]);
 			item.type = sets[s][1];
 			item._icon.set_reactive(true);
 			item._icon.connect('enter-event', (actor) => { item.setIcon('list-remove-symbolic'); });
-			item._icon.connect('leave-event', (actor) => { item.setIcon(sets[s][0]); });
+			item._icon.connect('leave-event', (actor) => { item.setIcon(dicon ?? sets[s][0]); });
 			item._icon.connect('button-release-event', (actor) => {
 				const a = this.get_array_from_str(item.type);
 				a.splice(a.indexOf(item.label.text), 1);
@@ -108,13 +119,13 @@ const Indicator = GObject.registerClass(
 				switch (item.type) {
 				case 'dirs':
 					cdir = mtext;
-					if (cdir.indexOf("~/") == 0) { cdir = GLib.get_home_dir() + cdir.substr(1); }
+					GLib.chdir(this.get_path(cdir));  //赋值就立刻改目录。
+					this.refresh_menu();  //刷新当前目录的图标
 					switch (event.get_button()) {
 					case 1:
-						Gio.app_info_launch_default_for_uri(`file://${cdir}`, global.create_app_launch_context(0, -1));
+						Gio.app_info_launch_default_for_uri(`file://${this.get_path(cdir)}`, global.create_app_launch_context(0, -1));
 						return Clutter.EVENT_STOP;
 					case 2:
-						GLib.chdir(cdir);
 						if (GLib.find_program_in_path('kgx')) {
 							GLib.spawn_command_line_async(`kgx`);
 						} else if (GLib.find_program_in_path('gnome-terminal')) {
@@ -133,7 +144,6 @@ const Indicator = GObject.registerClass(
 						this._clipboard.set_text(St.ClipboardType.PRIMARY, mtext);
 						return Clutter.EVENT_STOP;
 					}
-					GLib.chdir(cdir);
 					if (GLib.find_program_in_path('kgx')) {
 						GLib.spawn_command_line_async(`kgx -e '${mtext}'`);
 					} else if (GLib.find_program_in_path('gnome-terminal')) {

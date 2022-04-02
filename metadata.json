@@ -1,6 +1,6 @@
 {
 	"name": "note",
-	"description": "Add selected text to Note.\n- Notes automatic recognition and sort as 'Directory' 'Command' 'Clipboard'.\n- 'Directory': Mouse 1/2/3 act as 'Open in Files/Open in termianl/Paste dir'. It can be used as a temporary bookmark.\n- 'Command': Mouse 1/3 as 'Excute command in Terminal/Paste cmd'.\n- 'Clipboard': Mouse act as 'Paste to Clipboard(PRIMARY)'.\n- Terminal support kgx(new gnome-console) and gnome-terminal.",
+	"description": "Add selected text to Note.\n- Notes automatic recognition and sort as 'Directory' 'Command' 'Clipboard'.\n- 'Directory': Mouse 1/2/3 act as 'Open in Files/Open in termianl/Paste dir'. It can be used as a temporary bookmark. And any click will change the working diretory in real time.\n- 'Command': Mouse 1/3 as 'Excute command in Terminal/Paste cmd'.\n- 'Clipboard': Mouse act as 'Paste to Clipboard(PRIMARY)'.\n- Terminal support kgx(new gnome-console) and gnome-terminal.",
 	"uuid": "note@eexpss.gmail.com",
 	"url": "https://github.com/eexpress/gs-note",
 	"gettext-domain": "note",
