@@ -41,6 +41,7 @@ const Indicator = GObject.registerClass(
 
 		get_clip() {
 			this._clipboard.get_text(St.ClipboardType.PRIMARY, (clipboard, text) => {
+				if (!text) return;	// text is null
 				text = text.trim();
 				if (text.length < 3) return;
 				let path = text;
