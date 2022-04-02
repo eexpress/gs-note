@@ -72,9 +72,14 @@ const Indicator = GObject.registerClass(
 		};
 
 		refresh_menu() {
-			this.menu._getMenuItems().forEach((j) => {if(j.type) j.destroy(); });
+			//~ this.menu._getMenuItems().forEach((j) => {if(j.type) j.destroy(); });
+			this.menu._getMenuItems().forEach(j => {j.destroy();});
 			for (let i of dirs) { this.add_menu(i, 0); }
+			const l0 = new PopupMenu.PopupSeparatorMenuItem();
+			this.menu.addMenuItem(l0);
 			for (let i of cmds) { this.add_menu(i, 1); }
+			const l1 = new PopupMenu.PopupSeparatorMenuItem();
+			this.menu.addMenuItem(l1);
 			for (let i of clip) { this.add_menu(i, 2); }
 		};
 
