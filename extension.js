@@ -49,7 +49,7 @@ const Indicator = GObject.registerClass(
 					return;
 				}
 				const para = text.split('\ ');
-				const r = GLib.find_program_in_path(para[0]);
+				const r = GLib.find_program_in_path(para[0]);	//need judge `alias`
 				if (r) {
 					this.add_data(text, 'cmds');
 					return;
