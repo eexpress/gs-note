@@ -15,6 +15,7 @@ let dirs = [];	//常用目录
 let cmds = [];	//常用命令
 let clip = [];	//纯粹的剪贴板信息
 let cdir = '';	//当前目录
+let last = '';  //最后一个剪贴板文本
 
 const Indicator = GObject.registerClass(
 	class Indicator extends PanelMenu.Button {
@@ -42,6 +43,7 @@ const Indicator = GObject.registerClass(
 		get_clip() {
 			this._clipboard.get_text(St.ClipboardType.PRIMARY, (clipboard, text) => {
 				if (!text) return;	// text is null
+				if (text == last) return;
 				text = text.trim();
 				if (text.length < 3) return;
 				if (GLib.file_test(this.get_path(text), GLib.FileTest.IS_DIR)) {
@@ -67,6 +69,7 @@ const Indicator = GObject.registerClass(
 			const a = this.get_array_from_str(s);
 			if (a.indexOf(text) >= 0) return;
 			a.push(text);
+			last = text;
 			this.settings.set_strv(s, a);
 			this.refresh_menu();
 		};
