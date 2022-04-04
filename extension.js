@@ -15,7 +15,7 @@ let dirs = [];	//常用目录
 let cmds = [];	//常用命令
 let clip = [];	//纯粹的剪贴板信息
 let cdir = '';	//当前目录
-let last = '';  //最后一个剪贴板文本
+let last = '';	//最后一个剪贴板文本
 
 const Indicator = GObject.registerClass(
 	class Indicator extends PanelMenu.Button {
@@ -51,7 +51,7 @@ const Indicator = GObject.registerClass(
 					return;
 				}
 				const para = text.split('\ ');
-				const r = GLib.find_program_in_path(para[0]);	//need judge `alias`
+				const r = GLib.find_program_in_path(para[0]);  // need judge `alias`
 				if (r) {
 					this.add_data(text, 'cmds');
 					return;
@@ -75,8 +75,8 @@ const Indicator = GObject.registerClass(
 		};
 
 		refresh_menu() {
-			//~ this.menu._getMenuItems().forEach((j) => {if(j.type) j.destroy(); });
-			this.menu._getMenuItems().forEach(j => {j.destroy();});
+			//~ this.menu._getMenuItems().forEach((j) => {if(j._type) j.destroy(); });
+			this.menu._getMenuItems().forEach(j => { j.destroy(); });
 			for (let i of dirs) { this.add_menu(i, 0); }
 			const l0 = new PopupMenu.PopupSeparatorMenuItem();
 			this.menu.addMenuItem(l0);
@@ -111,20 +111,24 @@ const Indicator = GObject.registerClass(
 				}
 				if (cdir == text) dicon = 'emblem-ok-symbolic';
 			}
-			const item = new PopupMenu.PopupImageMenuItem(text, dicon ?? sets[s][0]);
-			item.type = sets[s][1];
+			let _lstr = text;
+			if (text.length > 150) { _lstr = text.substr(0, 150) + '...'; }
+			const item = new PopupMenu.PopupImageMenuItem(_lstr, dicon ?? sets[s][0]);
+			item._text = text;  // append attr
+			item._type = sets[s][1];	 // append attr
 			item._icon.set_reactive(true);
 			item._icon.connect('enter-event', (actor) => { item.setIcon('list-remove-symbolic'); });
 			item._icon.connect('leave-event', (actor) => { item.setIcon(dicon ?? sets[s][0]); });
 			item._icon.connect('button-release-event', (actor) => {
-				const a = this.get_array_from_str(item.type);
+				const a = this.get_array_from_str(item._type);
 				a.splice(a.indexOf(item.label.text), 1);
 				this.settings.set_strv(sets[s][1], a);
 				item.destroy();
 			});
 			item.connect('activate', (actor, event) => {
-				const mtext = item.label.text;
-				switch (item.type) {
+				//~ const mtext = item.label.text;
+				const mtext = item._text;
+				switch (item._type) {
 				case 'dirs':
 					cdir = mtext;
 					GLib.chdir(this.get_path(cdir));  //赋值就立刻改目录。
