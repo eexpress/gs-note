@@ -77,9 +77,13 @@ const Indicator = GObject.registerClass(
 		refresh_menu() {
 			//~ this.menu._getMenuItems().forEach((j) => {if(j._type) j.destroy(); });
 			this.menu._getMenuItems().forEach(j => { j.destroy(); });
+			const item0 = new PopupMenu.PopupMenuItem('❶ 📂    ❷🖥    ❸📋 ');
+			this.menu.addMenuItem(item0);
 			for (let i of dirs) { this.add_menu(i, 0); }
 			const l0 = new PopupMenu.PopupSeparatorMenuItem();
 			this.menu.addMenuItem(l0);
+			const item1 = new PopupMenu.PopupMenuItem('❶ ❷🖥    ❸📋 ');
+			this.menu.addMenuItem(item1);
 			for (let i of cmds) { this.add_menu(i, 1); }
 			const l1 = new PopupMenu.PopupSeparatorMenuItem();
 			this.menu.addMenuItem(l1);
