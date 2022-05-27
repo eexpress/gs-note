@@ -29,7 +29,7 @@ const Indicator = GObject.registerClass(
 			this._clipboard = St.Clipboard.get_default();
 
 			this.add_child(new St.Icon({
-				icon_name : 'notes-app-symbolic',
+				icon_name : 'edit-paste-symbolic',
 				style_class : 'system-status-icon',
 			}));
 
