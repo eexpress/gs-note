@@ -111,7 +111,7 @@ const Indicator = GObject.registerClass(
 			if (s === 0) {	// dirs
 				if (!cdir) {  //缺省第一个目录。
 					cdir = text;
-					GLib.chdir(this.get_path(cdir));  //赋值就立刻改目录。
+					//~ GLib.chdir(this.get_path(cdir));  //赋值就立刻改目录。会影响缺省的 terminal 打开目录。
 				}
 				if (cdir == text) dicon = 'emblem-ok-symbolic';
 			}
@@ -134,18 +134,18 @@ const Indicator = GObject.registerClass(
 				const mtext = item._text;
 				switch (item._type) {
 				case 'dirs':
-					cdir = mtext;
-					GLib.chdir(this.get_path(cdir));  //赋值就立刻改目录。
+					cdir = this.get_path(mtext);
+					//~ GLib.chdir(this.get_path(cdir));  //赋值就立刻改目录。会影响缺省的 terminal 打开目录。
 					this.refresh_menu();  //刷新当前目录的图标
 					switch (event.get_button()) {
 					case 1:
-						Gio.app_info_launch_default_for_uri(`file://${this.get_path(cdir)}`, global.create_app_launch_context(0, -1));
+						Gio.app_info_launch_default_for_uri(`file://${cdir}`, global.create_app_launch_context(0, -1));
 						return Clutter.EVENT_STOP;
 					case 2:
 						if (GLib.find_program_in_path('kgx')) {
-							GLib.spawn_command_line_async(`kgx`);
+							GLib.spawn_command_line_async(`kgx --working-directory=${cdir}`);
 						} else if (GLib.find_program_in_path('gnome-terminal')) {
-							GLib.spawn_command_line_async(`gnome-terminal`);
+							GLib.spawn_command_line_async(`gnome-terminal --working-directory=${cdir}`);
 						} else {
 							Main.notify(_("Not kgx(gnome-console) or gnome-terminal found."));
 						}
